@@ -1,0 +1,132 @@
+import java.awt.*;
+import java.util.*;
+import javax.swing.*;
+
+public class PhishorLegit {
+    private JFrame frame;
+    private JTextArea emailText;
+    private JLabel scoreLabel;
+    private int score = 0;
+    private int index = 0;
+
+    // Email class to store game data
+    private static class Email {
+        String text;
+        boolean isPhish;
+        String clue;
+
+        Email(String text, boolean isPhish, String clue) {
+            this.text = text;
+            this.isPhish = isPhish;
+            this.clue = clue;
+        }
+    }
+
+    private final ArrayList<Email> emails = new ArrayList<>();
+
+    public PhishorLegit() {
+        // Add emails
+        emails.add(new Email(
+                "Subject: Reset your password now!\n\nYour account has been compromised. Click here to reset your password: http://bit.ly/secure-login",
+                true, "Suspicious shortened URL and urgency in tone."));
+        emails.add(new Email(
+                "Subject: Meeting Agenda\n\nHere’s the agenda for tomorrow’s meeting. Let me know if you need anything else.",
+                false, "Simple, expected internal message with no links or urgency."));
+        emails.add(new Email(
+                "Subject: You’ve won a $500 gift card!\n\nClick below to claim your reward before it expires: http://freegift.shop/winner",
+                true, "Unsolicited reward and time pressure."));
+        emails.add(new Email(
+                "Subject: HR Policy Update\n\nPlease read the attached document regarding new holiday policy changes.",
+                false, "Expected company communication with no external links."));
+        emails.add(new Email(
+                "Subject: Important Security Alert\n\nWe detected a login from Nigeria. Confirm your identity here: http://secure-update.co/login",
+                true, "Fake domain name and fear tactic."));
+
+        Collections.shuffle(emails);
+
+        // Build GUI
+        frame = new JFrame("Phish or Legit? - Gamified Cyber Training");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(700, 400);
+        frame.setLayout(new BorderLayout());
+        frame.getContentPane().setBackground(new Color(240, 244, 248));
+
+        JLabel title = new JLabel("Phish or Legit?", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 24));
+        frame.add(title, BorderLayout.NORTH);
+
+        emailText = new JTextArea();
+        emailText.setEditable(false);
+        emailText.setLineWrap(true);
+        emailText.setWrapStyleWord(true);
+        emailText.setFont(new Font("Arial", Font.PLAIN, 14));
+        emailText.setBackground(Color.WHITE);
+        emailText.setMargin(new Insets(10, 10, 10, 10));
+
+        JScrollPane scrollPane = new JScrollPane(emailText);
+        frame.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setBackground(new Color(240, 244, 248));
+
+        JButton phishButton = new JButton("🚨 Phish");
+        phishButton.setBackground(new Color(255, 76, 76));
+        phishButton.setForeground(Color.WHITE);
+        phishButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JButton legitButton = new JButton("✅ Legit");
+        legitButton.setBackground(new Color(76, 175, 80));
+        legitButton.setForeground(Color.WHITE);
+        legitButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+        scoreLabel = new JLabel("Score: 0");
+        scoreLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        bottomPanel.add(phishButton);
+        bottomPanel.add(legitButton);
+        bottomPanel.add(scoreLabel);
+        frame.add(bottomPanel, BorderLayout.SOUTH);
+
+        // Button listeners
+        phishButton.addActionListener(e -> checkAnswer(true));
+        legitButton.addActionListener(e -> checkAnswer(false));
+
+        showEmail();
+        frame.setVisible(true);
+    }
+
+    private void showEmail() {
+        if (index < emails.size()) {
+            emailText.setText(emails.get(index).text);
+            scoreLabel.setText("Score: " + score);
+        } else {
+            endGame();
+        }
+    }
+
+    private void checkAnswer(boolean guessIsPhish) {
+        Email email = emails.get(index);
+        boolean correct = (email.isPhish == guessIsPhish);
+
+        if (correct) {
+            score += 10;
+            JOptionPane.showMessageDialog(frame, "✅ Correct!\n\nClue: " + email.clue);
+        } else {
+            score -= 5;
+            JOptionPane.showMessageDialog(frame, "❌ Incorrect.\n\nClue: " + email.clue);
+        }
+
+        index++;
+        showEmail();
+    }
+
+    private void endGame() {
+        JOptionPane.showMessageDialog(frame,
+                "🎮 Game Over!\nFinal Score: " + score + "\n\nThanks for playing Phish or Legit!");
+        frame.dispose();
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(PhishorLegit::new);
+    }
+}
